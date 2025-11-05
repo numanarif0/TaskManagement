@@ -11,6 +11,9 @@ import com.yzmglstm.repository.UsersRepository;
 import com.yzmglstm.services.IUsersServices;
 import com.yzmglstm.dto.DtoUsersIU;
 import com.yzmglstm.entities.Users;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.yzmglstm.dto.DtoLoginRequest; 
+import java.util.Optional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,23 +21,30 @@ import java.util.List;
 @Service
 public class UsersServicesImpl implements IUsersServices {
 
-    @Autowired
-    private UsersRepository usersRepository;
+    private final UsersRepository usersRepository;
+    private final PasswordEncoder passwordEncoder; 
 
-    @Override
+    
+    @Autowired
+    public UsersServicesImpl(UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
+        this.usersRepository = usersRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+   @Override
     public DtoUsers saveUsers(DtoUsersIU dtoUsersIU) {
         
-        DtoUsers response = new DtoUsers();
         Users user = new Users();   
         BeanUtils.copyProperties(dtoUsersIU, user);
         
+        user.setPassword(passwordEncoder.encode(dtoUsersIU.getPassword()));
+        
+        
         Users savedUser = usersRepository.save(user);
 
+        DtoUsers response = new DtoUsers();
         BeanUtils.copyProperties(savedUser, response);
-
-
         return response;
-      
     }
 
 
@@ -52,6 +62,39 @@ public class UsersServicesImpl implements IUsersServices {
 
         return dtoResponseList;
 
+    }
+
+   
+
+    @Override
+    public DtoUsers loginUser(DtoLoginRequest dtoLoginRequest) {
+        
+        // 1. Adım: Kullanıcıyı e-posta ile veritabanında ara
+        Optional<Users> userOptional = usersRepository.findByMail(dtoLoginRequest.getMail());
+
+        // 2. Adım: Kullanıcı bulunamadıysa hata fırlat
+        if (userOptional.isEmpty()) {
+            // Normalde burada "Kullanıcı bulunamadı" denir, ancak güvenlik için
+            // "E-posta veya şifre hatalı" demek daha doğrudur.
+            throw new RuntimeException("E-posta veya şifre hatalı.");
+        }
+
+        Users user = userOptional.get();
+        String plainPassword = dtoLoginRequest.getPassword(); // Kullanıcının girdiği şifre
+        String hashedPassword = user.getPassword(); // Veritabanındaki hash'li şifre
+
+        // 3. Adım: Şifreleri karşılaştır
+        // passwordEncoder.matches() metodu, girilen düz metin şifre ile
+        // veritabanındaki hash'li şifreyi güvenli bir şekilde karşılaştırır.
+        if (passwordEncoder.matches(plainPassword, hashedPassword)) {
+            // Şifre doğruysa, DtoUsers olarak kullanıcı bilgilerini dön
+            DtoUsers response = new DtoUsers();
+            BeanUtils.copyProperties(user, response);
+            return response;
+        } else {
+            // Şifre yanlışsa hata fırlat
+            throw new RuntimeException("E-posta veya şifre hatalı.");
+        }
     }
 
 }

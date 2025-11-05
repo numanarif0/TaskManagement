@@ -11,6 +11,7 @@ import com.yzmglstm.controller.IUsersController;
 import com.yzmglstm.dto.DtoUsers;
 import com.yzmglstm.services.IUsersServices;
 import java.util.List;
+import com.yzmglstm.dto.DtoLoginRequest;
 
 import jakarta.validation.Valid;
 
@@ -34,6 +35,12 @@ public class UsersControllerImpl implements IUsersController{
     public List <DtoUsers> GetAllUsers(){
         return userServices.GetAllUsers();
 
+    }
+
+    @PostMapping(path = "/login")
+    @Override
+    public DtoUsers loginUser(@RequestBody @Valid DtoLoginRequest dtoLoginRequest) {
+        return userServices.loginUser(dtoLoginRequest);
     }
 
     
