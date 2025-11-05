@@ -47,7 +47,7 @@ public class UsersServicesImpl implements IUsersServices {
         return response;
     }
 
-
+    
     @Override
     public List <DtoUsers> GetAllUsers(){
 
@@ -69,30 +69,21 @@ public class UsersServicesImpl implements IUsersServices {
     @Override
     public DtoUsers loginUser(DtoLoginRequest dtoLoginRequest) {
         
-        // 1. Adım: Kullanıcıyı e-posta ile veritabanında ara
         Optional<Users> userOptional = usersRepository.findByMail(dtoLoginRequest.getMail());
 
-        // 2. Adım: Kullanıcı bulunamadıysa hata fırlat
         if (userOptional.isEmpty()) {
-            // Normalde burada "Kullanıcı bulunamadı" denir, ancak güvenlik için
-            // "E-posta veya şifre hatalı" demek daha doğrudur.
             throw new RuntimeException("E-posta veya şifre hatalı.");
         }
 
         Users user = userOptional.get();
-        String plainPassword = dtoLoginRequest.getPassword(); // Kullanıcının girdiği şifre
-        String hashedPassword = user.getPassword(); // Veritabanındaki hash'li şifre
+        String plainPassword = dtoLoginRequest.getPassword(); 
+        String hashedPassword = user.getPassword(); 
 
-        // 3. Adım: Şifreleri karşılaştır
-        // passwordEncoder.matches() metodu, girilen düz metin şifre ile
-        // veritabanındaki hash'li şifreyi güvenli bir şekilde karşılaştırır.
         if (passwordEncoder.matches(plainPassword, hashedPassword)) {
-            // Şifre doğruysa, DtoUsers olarak kullanıcı bilgilerini dön
             DtoUsers response = new DtoUsers();
             BeanUtils.copyProperties(user, response);
             return response;
         } else {
-            // Şifre yanlışsa hata fırlat
             throw new RuntimeException("E-posta veya şifre hatalı.");
         }
     }

@@ -2,6 +2,7 @@ package com.yzmglstm.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,19 +22,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Adım 1: Postman gibi REST API istemcileri için CSRF'ı devre dışı bırak.
             .csrf(csrf -> csrf.disable()) 
             
-            // Adım 2: Hangi yollara izin verileceğini belirle.
             .authorizeHttpRequests(authz -> authz
-                // Kullanıcı kayıt endpoint'ine herkesin erişebilmesi için izin ver.
-                .requestMatchers("/rest/api/users/save").permitAll() 
+                .requestMatchers("/rest/api/auth/save").permitAll() 
                 
-                // Senin test ettiğin 'get' endpoint'ine (şimdilik) izin ver.
-                .requestMatchers("/rest/api/users/get").permitAll() 
-                .requestMatchers("/rest/api/users/login").permitAll()
+                .requestMatchers("/rest/api/auth/get").permitAll() 
+                .requestMatchers("/rest/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/rest/api/tasks").permitAll()
                 
-                // Geri kalan tüm istekler kimlik doğrulaması gerektirsin.
                 .anyRequest().authenticated() 
             );
         
