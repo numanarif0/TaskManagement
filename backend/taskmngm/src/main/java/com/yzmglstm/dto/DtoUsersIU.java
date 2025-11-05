@@ -17,7 +17,8 @@ public class DtoUsersIU {
     private Date birthDate;
     private String mail;
     private String phone;
-
+    private String password;
+    
 
 
 }

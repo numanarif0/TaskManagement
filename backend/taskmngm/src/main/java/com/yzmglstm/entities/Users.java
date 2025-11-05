@@ -44,6 +44,8 @@ public class Users {
     @Column(name="phone",nullable = false,length = 11)
     private String phone;
 
+    @Column(name="password",nullable = false)
+    private String password;
     
     
 
