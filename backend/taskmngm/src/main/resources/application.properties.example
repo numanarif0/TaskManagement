@@ -11,8 +11,8 @@
 
 spring.application.name=taskmngm
 
-# Database Configuration - COPY THIS FILE AND CUSTOMIZE FOR YOUR LOCAL SETUP
-# This file is gitignored - each developer maintains their own version
+# Database Configuration - COPY THIS FILE to 'application.properties' AND CUSTOMIZE
+# application.properties is gitignored - each developer maintains their own version
 # Common ports: 1433 (default), 58182 (named instance SQLEXPRESS)
 spring.datasource.url=jdbc:sqlserver://localhost:YOUR_PORT;databaseName=taskmanagement;encrypt=true;trustServerCertificate=true
 spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
