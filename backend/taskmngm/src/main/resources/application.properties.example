@@ -11,13 +11,13 @@
 
 spring.application.name=taskmngm
 
-# Database Configuration (shared for all team members - homework project)
-# Note: Check your SQL Server port in SQL Server Configuration Manager
-# Common ports: 1433 (default), 58182 (named instance), or dynamic port
-spring.datasource.url=jdbc:sqlserver://localhost:58182;databaseName=taskmanagement;encrypt=true;trustServerCertificate=true
+# Database Configuration - COPY THIS FILE AND CUSTOMIZE FOR YOUR LOCAL SETUP
+# This file is gitignored - each developer maintains their own version
+# Common ports: 1433 (default), 58182 (named instance SQLEXPRESS)
+spring.datasource.url=jdbc:sqlserver://localhost:YOUR_PORT;databaseName=taskmanagement;encrypt=true;trustServerCertificate=true
 spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
-spring.datasource.username=sa
-spring.datasource.password=123456
+spring.datasource.username=YOUR_USERNAME
+spring.datasource.password=YOUR_PASSWORD
 
 # JPA/Hibernate
 spring.jpa.hibernate.ddl-auto=update
