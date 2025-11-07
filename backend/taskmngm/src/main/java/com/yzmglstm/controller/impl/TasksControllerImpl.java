@@ -1,8 +1,12 @@
 package com.yzmglstm.controller.impl;
 
 import org.springframework.beans.factory.annotation.Autowired; 
-import org.springframework.web.bind.annotation.GetMapping; // <-- YENİ IMPORT
+import org.springframework.http.ResponseEntity; // <-- YENİ IMPORT
+import org.springframework.web.bind.annotation.DeleteMapping; // <-- YENİ IMPORT
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable; // <-- YENİ IMPORT
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping; // <-- YENİ IMPORT
 import org.springframework.web.bind.annotation.RequestBody; 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +16,7 @@ import com.yzmglstm.dto.DtoTask;
 import com.yzmglstm.dto.DtoTaskIU;
 import com.yzmglstm.services.ITasksServices;
 
-import java.util.List; // <-- YENİ IMPORT
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks") 
@@ -21,24 +25,34 @@ public class TasksControllerImpl implements ITasksController {
     @Autowired 
     private ITasksServices tasksServices;
 
-    // Bu, PDF'teki "POST /api/tasks" (Add new task) API'sidir
+    // --- GÖREV EKLEME (POST) ---
     @Override
     @PostMapping 
     public DtoTask saveTasks(@RequestBody DtoTaskIU dtoTasks) { 
-        // Mutfak'taki (Service) 'saveTask' metodunu çağırır.
-        // Bu metodu az önce kullanıcıyı atayacak şekilde güncellemiştik.
         return tasksServices.saveTask(dtoTasks);
     }
     
-    // --- YENİ EKLENEN METOT ---
-    // Bu, PDF'teki "GET /api/tasks" (List user's tasks) API'sidir
+    // --- GÖREV LİSTELEME (GET) ---
     @Override
-    @GetMapping // GET isteklerini bu adresten dinler
+    @GetMapping
     public List<DtoTask> GetAllTasks() {
-        // Mutfak'taki (Service) 'GetAllTasks' metodunu çağırır.
-        // Bu metodu az önce SADECE giriş yapan kullanıcının görevlerini
-        // getirecek şekilde güncellemiştik.
         return tasksServices.GetAllTasks();
     }
-    // -------------------------
+    
+    // --- YENİ EKLENEN METOT: GÖREV DÜZENLEME (PUT /api/tasks/{id}) ---
+    @Override
+    @PutMapping("/{id}") // {id} adresin değişken bir parçası olduğunu söyler
+    public DtoTask updateTask(@PathVariable Long id, @RequestBody DtoTaskIU dtoTasks) {
+        // @PathVariable, adresteki {id}'yi alıp Long id değişkenine atar
+        return tasksServices.updateTask(id, dtoTasks);
+    }
+
+    // --- YENİ EKLENEN METOT: GÖREV SİLME (DELETE /api/tasks/{id}) ---
+    @Override
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        tasksServices.deleteTask(id);
+        // Silme işlemi başarılı olduğunda standart cevap HTTP 204 (No Content)
+        return ResponseEntity.noContent().build();
+    }
 }
