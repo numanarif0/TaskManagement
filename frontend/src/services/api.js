@@ -13,10 +13,10 @@ const api = axios.create({
 
 // Auth Service
 export const authService = {
-  // Kullanıcı kaydı - Hasan'ın endpoint'i: /api/auth/save
+  // Kullanıcı kaydı - Gereksinim: /api/auth/register
   register: async (userData) => {
     try {
-      const response = await api.post('/api/auth/save', userData);
+      const response = await api.post('/api/auth/register', userData);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -26,7 +26,7 @@ export const authService = {
     }
   },
 
-  // Kullanıcı girişi - Hasan'ın endpoint'i: /api/auth/login
+  // Kullanıcı girişi - Gereksinim: /api/auth/login
   login: async (credentials) => {
     try {
       const response = await api.post('/api/auth/login', credentials);

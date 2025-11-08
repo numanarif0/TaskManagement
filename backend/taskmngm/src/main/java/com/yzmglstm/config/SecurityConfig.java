@@ -57,7 +57,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .httpBasic(Customizer.withDefaults()) 
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/save").permitAll() 
+                .requestMatchers("/api/auth/register").permitAll() 
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/tasks").authenticated() 
                 .requestMatchers("/api/tasks/**").authenticated()

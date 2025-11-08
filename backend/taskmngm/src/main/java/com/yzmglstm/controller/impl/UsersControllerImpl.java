@@ -25,7 +25,7 @@ public class UsersControllerImpl implements IUsersController{
     private IUsersServices userServices;
     
     @Override
-    @PostMapping(path="/save")
+    @PostMapping(path="/register")
     public DtoUsers saveUsers(@RequestBody @Valid DtoUsersIU dtoUsers) {
         return userServices.saveUsers(dtoUsers);
     }

@@ -18,12 +18,12 @@ function Dashboard({ user, onLogout }) {
       },
       {
         id: 2,
-        title: 'Prepare midterm presentation',
-        description: 'Create slides and demo for midterm presentation',
-        category: 'School',
+        title: 'Schedule team meeting',
+        description: 'Organize weekly team sync meeting',
+        category: 'Work',
         status: 'Pending',
-        dueDate: '2025-11-10',
-        dueTime: '14:00',
+        dueDate: '2025-11-12',
+        dueTime: '10:00',
       },
       {
         id: 3,
