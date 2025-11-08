@@ -2,7 +2,6 @@ package com.yzmglstm.services.impl;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import com.yzmglstm.dto.DtoUsers;
@@ -10,7 +9,6 @@ import com.yzmglstm.entities.Users;
 import com.yzmglstm.repository.UsersRepository;
 import com.yzmglstm.services.IUsersServices;
 import com.yzmglstm.dto.DtoUsersIU;
-import com.yzmglstm.entities.Users;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.yzmglstm.dto.DtoLoginRequest; 
 import java.util.Optional;
