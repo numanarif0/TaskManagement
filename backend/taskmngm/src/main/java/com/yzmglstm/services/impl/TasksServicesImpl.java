@@ -61,18 +61,26 @@ public class TasksServicesImpl implements ITasksServices {
 
 
     // --- GÖREV EKLEME (POST) ---
-    @Override
-    public DtoTask saveTask(DtoTaskIU dtoTasks) {
-        Users loggedInUser = getLoggedInUser();
-        Tasks tasks = new Tasks();
-        BeanUtils.copyProperties(dtoTasks, tasks);
-        tasks.setUser(loggedInUser); // Görevi kullanıcıya ata
-        Tasks saveTasks = tasksRepository.save(tasks);
-        DtoTask response = new DtoTask();
-        BeanUtils.copyProperties(saveTasks, response);
-        return response;
-    }
-
+  @Override
+public DtoTask saveTask(DtoTaskIU dtoTasks) {
+    // 1. Giriş yapan kullanıcıyı al
+    Users loggedInUser = getLoggedInUser();
+    
+    // 2. Yeni görev oluştur
+    Tasks tasks = new Tasks();
+    BeanUtils.copyProperties(dtoTasks, tasks);
+    
+    // 3. KRITIK: Görevi kullanıcıya ata
+    tasks.setUser(loggedInUser);
+    
+    // 4. Veritabanına kaydet
+    Tasks saveTasks = tasksRepository.save(tasks);
+    
+    // 5. Response oluştur
+    DtoTask response = new DtoTask();
+    BeanUtils.copyProperties(saveTasks, response);
+    return response;
+}
     // --- GÖREV LİSTELEME (GET) ---
     @Override
     public List<DtoTask> GetAllTasks() {

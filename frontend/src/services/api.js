@@ -1,19 +1,27 @@
 import axios from 'axios';
 
-// Backend API base URL - değiştirilecek endpoint'ler için tek nokta
 const API_BASE_URL = 'http://localhost:8080';
 
-// Axios instance oluştur
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // CORS için gerekli
 });
 
-// Auth Service
+// Her istekte authentication bilgisini ekle
+api.interceptors.request.use((config) => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.mail && user.password) {
+    // HTTP Basic Authentication
+    const auth = btoa(`${user.mail}:${user.password}`);
+    config.headers.Authorization = `Basic ${auth}`;
+  }
+  return config;
+});
+
 export const authService = {
-  // Kullanıcı kaydı - Gereksinim: /api/auth/register
   register: async (userData) => {
     try {
       const response = await api.post('/api/auth/register', userData);
@@ -26,11 +34,22 @@ export const authService = {
     }
   },
 
-  // Kullanıcı girişi - Gereksinim: /api/auth/login
   login: async (credentials) => {
     try {
-      const response = await api.post('/api/auth/login', credentials);
-      return { success: true, data: response.data };
+      const response = await api.post('/api/auth/login', credentials, {
+        auth: {
+          username: credentials.mail,
+          password: credentials.password
+        }
+      });
+      
+      // Şifreyi de kaydet (Basic Auth için gerekli)
+      const userData = {
+        ...response.data,
+        password: credentials.password // DIKKAT: Güvenlik için sadece development'ta
+      };
+      
+      return { success: true, data: userData };
     } catch (error) {
       return {
         success: false,
@@ -40,7 +59,6 @@ export const authService = {
   },
 };
 
-// Task Service (vize için sadece skeleton, final'de implement edilecek)
 export const taskService = {
   getAllTasks: async () => {
     try {
