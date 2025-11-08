@@ -17,7 +17,8 @@ import jakarta.validation.Valid;
 
 
 @RestController
-@RequestMapping("rest/api/auth")
+// ADRES GÜNCELLENDİ: "rest/" kaldırıldı.
+@RequestMapping("/api/auth") 
 public class UsersControllerImpl implements IUsersController{
 
     @Autowired
@@ -44,8 +45,4 @@ public class UsersControllerImpl implements IUsersController{
     }
 
     
-
-
-
-
 }
