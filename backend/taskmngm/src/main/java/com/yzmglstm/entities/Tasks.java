@@ -19,8 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-// Veritabanında 'tasks' şemasını oluşturduğun için 'schema = "tasks"' ekliyoruz.
-@Table(name="tasks", schema = "tasks")
+@Table(name="tasks")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

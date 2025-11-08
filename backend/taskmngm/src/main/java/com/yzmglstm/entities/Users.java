@@ -20,8 +20,7 @@ import lombok.NoArgsConstructor;
 
 
 @Entity
-// Veritabanında 'tasks' şemasını oluşturduğun için 'schema = "tasks"' ekliyoruz.
-@Table(name="users", schema = "tasks") 
+@Table(name="users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
