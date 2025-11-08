@@ -14,13 +14,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany; // <-- YENİ EKLENDİ (İlişki için)
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
 @Entity
-@Table(name="users")
+@Table(name="users",uniqueConstraints = {
+    @UniqueConstraint(name = "UQ_users_email", columnNames = "email"),
+    @UniqueConstraint(name = "UQ_users_phone", columnNames = "phone")
+  })
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
