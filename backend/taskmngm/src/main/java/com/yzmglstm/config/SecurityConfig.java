@@ -3,59 +3,64 @@ package com.yzmglstm.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.core.userdetails.UserDetailsService; // YENİ
-import org.springframework.security.core.userdetails.UsernameNotFoundException; // YENİ
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
-import com.yzmglstm.repository.UsersRepository; // YENİ
-import com.yzmglstm.entities.Users; // YENİ
+import com.yzmglstm.repository.UsersRepository;
+import com.yzmglstm.entities.Users;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     
     @Autowired
-    private UsersRepository usersRepository; // YENİ
+    private UsersRepository usersRepository;
     
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
     
-    // ========== YENİ EKLENEN METOT ==========
     @Bean
     public UserDetailsService userDetailsService() {
         return email -> {
-            // Veritabanından kullanıcıyı bul
             Users user = usersRepository.findByMail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı: " + email));
             
-            // Spring Security'nin anlayacağı formata çevir
             return org.springframework.security.core.userdetails.User
                 .withUsername(user.getMail())
-                .password(user.getPassword()) // Zaten şifreli olarak kayıtlı
-                .authorities("USER") // Rol ver
+                .password(user.getPassword())
+                .authorities("USER")
                 .build();
         };
     }
-    // =========================================
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
-            .httpBasic(Customizer.withDefaults()) 
+            // Session'ı stateless yap
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            // HTTP Basic'i yapılandır - tarayıcı pop-up'ını devre dışı bırak
+            .httpBasic(basic -> basic
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+            )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/register").permitAll() 
                 .requestMatchers("/api/auth/login").permitAll()
