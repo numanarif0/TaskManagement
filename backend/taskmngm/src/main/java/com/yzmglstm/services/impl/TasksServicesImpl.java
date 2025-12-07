@@ -59,22 +59,26 @@ public class TasksServicesImpl implements ITasksServices {
 
 
     // --- GÖREV EKLEME (POST) ---
-  @Override
+    @Override
 public DtoTask saveTask(DtoTaskIU dtoTasks) {
-    // 1. Giriş yapan kullanıcıyı al
     Users loggedInUser = getLoggedInUser();
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     
-    // 2. Yeni görev oluştur
+    // Varsayılan hedef: Görevi kendine ata
+    Users targetUser = loggedInUser; 
+
+    // KURAL: Admin ise VE "assignedUserId" gönderilmişse hedefi değiştir
+    if (isAdmin(auth) && dtoTasks.getAssignedUserId() != null) {
+        targetUser = usersRepository.findById(dtoTasks.getAssignedUserId())
+                .orElseThrow(() -> new RuntimeException("Atanacak kullanıcı (ID: " + dtoTasks.getAssignedUserId() + ") bulunamadı!"));
+    }
+    
     Tasks tasks = new Tasks();
     BeanUtils.copyProperties(dtoTasks, tasks);
     
-    // 3. KRITIK: Görevi kullanıcıya ata
-    tasks.setUser(loggedInUser);
+    tasks.setUser(targetUser); // Belirlenen kullanıcıyı set et
     
-    // 4. Veritabanına kaydet
     Tasks saveTasks = tasksRepository.save(tasks);
-    
-    // 5. Response oluştur
     DtoTask response = new DtoTask();
     BeanUtils.copyProperties(saveTasks, response);
     return response;
@@ -106,23 +110,25 @@ public DtoTask saveTask(DtoTaskIU dtoTasks) {
 
     // --- YENİ EKLENEN METOT: GÖREV DÜZENLEME (PUT /api/tasks/:id) ---
     @Override
-    public DtoTask updateTask(Long taskId, DtoTaskIU dtoTasks) {
-        
-        // 1. Güvenlik Kontrolü: Bu görev bu kullanıcıya mı ait?
-        Tasks existingTask = checkTaskOwnerAndGet(taskId);
-        
-        // 2. Güncelleme: DTO'dan gelen yeni verileri mevcut göreve kopyala
-        // (id ve user alanı hariç)
-        BeanUtils.copyProperties(dtoTasks, existingTask, "id", "user");
-        
-        // 3. Kaydet: Değişiklikleri kaydet
-        Tasks updatedTask = tasksRepository.save(existingTask);
-        
-        // 4. Cevapla
-        DtoTask response = new DtoTask();
-        BeanUtils.copyProperties(updatedTask, response);
-        return response;
+public DtoTask updateTask(Long taskId, DtoTaskIU dtoTasks) {
+    Tasks existingTask = checkTaskOwnerAndGet(taskId);
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    // 1. Standart alanları kopyala (id ve user hariç)
+    BeanUtils.copyProperties(dtoTasks, existingTask, "id", "user");
+
+    // 2. KURAL: Admin ise VE yeni bir sahip ID'si göndermişse sahibini değiştir
+    if (isAdmin(auth) && dtoTasks.getAssignedUserId() != null) {
+         Users newUser = usersRepository.findById(dtoTasks.getAssignedUserId())
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+         existingTask.setUser(newUser);
     }
+    
+    Tasks updatedTask = tasksRepository.save(existingTask);
+    DtoTask response = new DtoTask();
+    BeanUtils.copyProperties(updatedTask, response);
+    return response;
+}
 
     // --- YENİ EKLENEN METOT: GÖREV SİLME (DELETE /api/tasks/:id) ---
     @Override

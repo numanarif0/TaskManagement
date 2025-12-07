@@ -18,5 +18,6 @@ public class DtoTaskIU {
     private String status;
     private LocalDate dueDate; 
     private LocalTime dueTime;
+    private Long assignedUserId;
     
 }
