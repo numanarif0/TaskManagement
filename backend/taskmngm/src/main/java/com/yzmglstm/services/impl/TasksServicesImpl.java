@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // <-- YENİ IMPORT
 
+import com.yzmglstm.dto.DtoFilterTasks;
 import com.yzmglstm.dto.DtoTask;
 import com.yzmglstm.dto.DtoTaskIU;
 import com.yzmglstm.entities.Tasks;
@@ -147,4 +148,40 @@ public DtoTask updateTask(Long taskId, DtoTaskIU dtoTasks) {
     return authentication.getAuthorities().stream()
             .anyMatch(r -> r.getAuthority().equals("ADMIN"));
 }
+
+    @Override
+    public DtoFilterTasks filterGetTasks() {
+        DtoFilterTasks dtoFilterTasks = new DtoFilterTasks();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // If admin -> return global stats, otherwise return stats only for the logged-in user
+        if (isAdmin(auth)) {
+            Long totalTasks = tasksRepository.count();
+            Long completedTasks = tasksRepository.countByStatus("COMPLETED");
+            Long pendingTasks = tasksRepository.countByStatus("PENDING");
+            Long inProgressTasks = tasksRepository.countByStatus("IN_PROGRESS");
+
+            dtoFilterTasks.setTotalTasks(totalTasks);
+            dtoFilterTasks.setCompletedTasks(completedTasks);
+            dtoFilterTasks.setPendingTasks(pendingTasks);
+            dtoFilterTasks.setInProgressTasks(inProgressTasks);
+        } else {
+            Users loggedInUser = getLoggedInUser();
+            Long userId = loggedInUser.getId();
+
+            Long totalTasks = tasksRepository.countByUserId(userId);
+            Long completedTasks = tasksRepository.countByStatusAndUserId("Completed", userId);
+            Long pendingTasks = tasksRepository.countByStatusAndUserId("Pending", userId);
+            Long inProgressTasks = tasksRepository.countByStatusAndUserId("In Progress", userId);
+
+            dtoFilterTasks.setTotalTasks(totalTasks);
+            dtoFilterTasks.setCompletedTasks(completedTasks);
+            dtoFilterTasks.setPendingTasks(pendingTasks);
+            dtoFilterTasks.setInProgressTasks(inProgressTasks);
+        }
+
+        return dtoFilterTasks;
+    }
+
 }

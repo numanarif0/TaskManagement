@@ -14,6 +14,16 @@ public interface TasksRepository extends JpaRepository<Tasks, Long> {
     // (SELECT * FROM tasks.tasks WHERE user_id = ?) sorgusunu OTOMATİK oluşturur.
     
     List<Tasks> findByUserId(Long userId);
+
+    long countByStatus(String status);
+
+    // --- Kullanıcıya özel sayaç metodları ---
+    // Toplam görev sayısı bir kullanıcı için
+    long countByUserId(Long userId);
+
+    // Belirli bir duruma sahip görevlerin sayısı, bir kullanıcı için
+    long countByStatusAndUserId(String status, Long userId);
+
     
-    // -----------------------------------
+    
 }

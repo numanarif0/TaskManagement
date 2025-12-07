@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.yzmglstm.controller.ITasksController;
+import com.yzmglstm.dto.DtoFilterTasks;
 import com.yzmglstm.dto.DtoTask;
 import com.yzmglstm.dto.DtoTaskIU;
 import com.yzmglstm.services.ITasksServices;
@@ -54,5 +55,11 @@ public class TasksControllerImpl implements ITasksController {
         tasksServices.deleteTask(id);
         // Silme işlemi başarılı olduğunda standart cevap HTTP 204 (No Content)
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @GetMapping("/stats")
+    public DtoFilterTasks filterGetTasks(){
+        return tasksServices.filterGetTasks();
     }
 }

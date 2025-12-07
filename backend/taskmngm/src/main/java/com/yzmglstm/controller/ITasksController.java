@@ -1,5 +1,6 @@
 package com.yzmglstm.controller;
 
+import com.yzmglstm.dto.DtoFilterTasks;
 import com.yzmglstm.dto.DtoTask;
 import com.yzmglstm.dto.DtoTaskIU;
 import java.util.List;
@@ -16,5 +17,7 @@ public interface ITasksController {
     DtoTask updateTask(Long id, DtoTaskIU dtoTasks);
     
     ResponseEntity<Void> deleteTask(Long id);
+
+    DtoFilterTasks filterGetTasks();
 
 }

@@ -1,5 +1,6 @@
 package com.yzmglstm.services;
 
+import com.yzmglstm.dto.DtoFilterTasks;
 import com.yzmglstm.dto.DtoTask;
 import com.yzmglstm.dto.DtoTaskIU;
 import java.util.List;
@@ -15,5 +16,7 @@ public interface ITasksServices {
     DtoTask updateTask(Long taskId, DtoTaskIU dtoTasks);
     
     void deleteTask(Long taskId);
+
+    DtoFilterTasks filterGetTasks();
 
 }
