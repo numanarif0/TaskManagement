@@ -42,21 +42,19 @@ public class TasksServicesImpl implements ITasksServices {
     // --- YARDIMCI METOT (Güvenlik Kontrolü) ---
     // Bu metot, bir görevin giriş yapan kullanıcıya ait olup olmadığını kontrol eder
     private Tasks checkTaskOwnerAndGet(Long taskId) {
-        Users loggedInUser = getLoggedInUser();
-        
-        // Görevi ID ile bul
-        Tasks task = tasksRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Görev bulunamadı: " + taskId));
+    Users loggedInUser = getLoggedInUser();
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        // GÖREVLİ GÜVENLİK KONTROLÜ
-        // Görevin 'user_id'si ile giriş yapan kullanıcının 'id'si eşleşiyor mu?
-        if (!task.getUser().getId().equals(loggedInUser.getId())) {
-            // Eşleşmiyorsa, bu görev başkasına aittir. Hata fırlat.
-            throw new RuntimeException("Yetkisiz erişim: Bu görevi düzenleme/silme izniniz yok.");
-        }
-        
-        // Görev bu kullanıcıya aittir, güvenle geri döndür
-        return task;
+    Tasks task = tasksRepository.findById(taskId)
+            .orElseThrow(() -> new RuntimeException("Görev bulunamadı: " + taskId));
+
+    // KURAL: Eğer kullanıcı ADMIN değilse VE görevin sahibi değilse hata ver.
+    // Yani: Admin ise geç, sahibi ise geç. İkisi de değilse durdur.
+    if (!isAdmin(auth) && !task.getUser().getId().equals(loggedInUser.getId())) {
+        throw new RuntimeException("Yetkisiz erişim: Bu işlemi yapmaya izniniz yok.");
+    }
+    
+    return task;
     }
 
 
@@ -84,10 +82,21 @@ public DtoTask saveTask(DtoTaskIU dtoTasks) {
     // --- GÖREV LİSTELEME (GET) ---
     @Override
     public List<DtoTask> GetAllTasks() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Users loggedInUser = getLoggedInUser();
-        List<Tasks> userTasks = tasksRepository.findByUserId(loggedInUser.getId());
+
+        List<Tasks> tasksList;
+        
+        // Eğer Admin ise TÜM görevleri getir, değilse sadece KENDİ görevlerini getir
+        if (isAdmin(auth)) {
+            tasksList = tasksRepository.findAll(); // Admin hepsini görür
+        } else {
+            tasksList = tasksRepository.findByUserId(loggedInUser.getId()); // User sadece kendininkini
+        }
+        
+        // ... DTO dönüşüm kodları aynı kalacak ...
         List<DtoTask> dtoList = new ArrayList<>();
-        for (Tasks task : userTasks) {
+        for (Tasks task : tasksList) {
             DtoTask dto = new DtoTask();
             BeanUtils.copyProperties(task, dto);
             dtoList.add(dto);
@@ -127,4 +136,9 @@ public DtoTask saveTask(DtoTaskIU dtoTasks) {
         
         // (Bu metot bir şey döndürmez, HTTP 204 No Content beklenir)
     }
+
+    private boolean isAdmin(Authentication authentication) {
+    return authentication.getAuthorities().stream()
+            .anyMatch(r -> r.getAuthority().equals("ADMIN"));
+}
 }

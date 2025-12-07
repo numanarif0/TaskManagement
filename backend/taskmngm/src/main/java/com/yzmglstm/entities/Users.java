@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany; // <-- YENİ EKLENDİ (İlişki için)
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="users",uniqueConstraints = {
-    @UniqueConstraint(name = "UQ_users_email", columnNames = "email"),
+    @UniqueConstraint(name = "UQ_users_email", columnNames = "mail"),
     @UniqueConstraint(name = "UQ_users_phone", columnNames = "phone")
   })
 
@@ -53,7 +54,16 @@ public class Users {
 
     @Column(name="password",nullable = false)
     private String password;
+
+    @Column(name="role",nullable = false)
+    private String role;
     
+    @PrePersist
+    public void prePersist(){
+      if(this.role==null){
+        this.role = "USER";
+      }
+    }
     
     // --- YENİ EKLENEN "ONE-TO-MANY" İLİŞKİSİ ---
     // Bir Kullanıcının, birden çok Görevi (Tasks) olabilir.
@@ -65,5 +75,6 @@ public class Users {
     )
     private List<Tasks> tasks; // Kullanıcının görevlerinin listesi
     
-    // ------------------------------------------
+    
+
 }

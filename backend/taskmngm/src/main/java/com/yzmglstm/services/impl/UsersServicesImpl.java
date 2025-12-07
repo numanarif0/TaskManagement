@@ -62,6 +62,7 @@ public class UsersServicesImpl implements IUsersServices {
         // 3) Kopyala + normalize değerleri zorla
         Users user = new Users();
         BeanUtils.copyProperties(dtoUsersIU, user);
+        user.setRole("USER");
         user.setMail(mail);
         user.setPhone(phone);
         user.setPassword(passwordEncoder.encode(dtoUsersIU.getPassword()));
@@ -70,6 +71,7 @@ public class UsersServicesImpl implements IUsersServices {
             Users savedUser = usersRepository.save(user);
             DtoUsers response = new DtoUsers();
             BeanUtils.copyProperties(savedUser, response);
+
             return response;
         } catch (DataIntegrityViolationException ex) {
             // Aynı anda iki istek gelirse DB'deki UNIQUE constraint patlayabilir
@@ -110,4 +112,6 @@ public class UsersServicesImpl implements IUsersServices {
             throw new RuntimeException("E-posta veya şifre hatalı.");
         }
     }
+
+    
 }
