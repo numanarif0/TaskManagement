@@ -18,9 +18,4 @@ public class DtoUsersIU {
     private String mail;
     private String phone;
     private String password;
-
-    
-    
-
-
 }
