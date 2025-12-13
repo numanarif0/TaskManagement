@@ -22,16 +22,19 @@ import com.yzmglstm.dto.DtoAttachments;
 @RequestMapping("/api/attachments")
 public class AttachmentsControllerImpl implements IAttachmentsController {
 
+@Autowired    
+private IAttachmentsServices attachmentsServices;
+
 @Override
 @PostMapping("/upload/{taskId}")    
 public DtoAttachments uploadAttachments(@RequestParam("file")MultipartFile file, @PathVariable Long taskId){
-    return null;
+    return attachmentsServices.uploadAttachment(file, taskId);
 }
 
 @Override
 @GetMapping("/task/{taskID}")
 public List<DtoAttachments> getAttachmentsByTask(@PathVariable Long taskID){
-    return null;
+    return attachmentsServices.getAttachmentsByTask(taskID);
 }
 @Override
 @DeleteMapping("/{id}")
@@ -43,7 +46,7 @@ public void deleteAttachment(@PathVariable Long id){
 @GetMapping("/download/{id}")
 public ResponseEntity<Byte[]> downloadAttachment(@PathVariable Long id){
 
-    return null;
+    return attachmentsServices.downloadAttachment(id);
 }
 
 
