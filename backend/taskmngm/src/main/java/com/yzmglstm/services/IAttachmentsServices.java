@@ -1,14 +1,18 @@
 package com.yzmglstm.services;
 
-import org.springframework.web.multipart.MultipartFile;
-import com.yzmglstm.dto.DtoAttachments;
-
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.yzmglstm.dto.DtoAttachments;
+
 public interface IAttachmentsServices {
-    DtoAttachments uploadAttachment(Long taskId, MultipartFile file);
-    List<DtoAttachments> getAttachmentsByTask(Long taskId);
-    byte[] getAttachmentData(Long attachmentId); // İndirmek için
-    String getAttachmentName(Long attachmentId); // İndirme ismi için
-    void deleteAttachment(Long attachmentId);
+
+     public DtoAttachments uploadAttachments(MultipartFile file, Long taskId);
+    public List<DtoAttachments> getAttachmentsByTask(Long taskID);
+    public void deleteAttachment(Long id);
+    public ResponseEntity<Byte[]> downloadAttachment(Long id);
+
+
 }
