@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import com.yzmglstm.dto.DtoAttachments;
 import com.yzmglstm.entities.Attachments;
 import com.yzmglstm.entities.Tasks;
@@ -89,8 +90,11 @@ public DtoAttachments uploadAttachments(MultipartFile file , Long taskId){
         attachments.setStoragePath(filePath.toString());
         attachments.setFileSize(file.getSize());
         attachments.setUploadDate(LocalDate.now());
+        attachments.setFileType(extension);
+        attachments.setOriginalFileName(originalFilename);
         attachments.setTask(task);
         attachments.setUser(getLoggedInUser());
+
 
         Attachments savedAttachment = attachmentsRepository.save(attachments);
 
@@ -134,9 +138,30 @@ public void deleteAttachment(Long id){
 }
 
 @Override
-public ResponseEntity<Byte[]> downloadAttachment(Long id){
-    // Implementation will go here
-    return null;
+public ResponseEntity<byte[]> downloadAttachment(Long id){
+    
+    Attachments attachment = attachmentsRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Dosya bulunamadı: " + id));
+
+    Path path = Paths.get(attachment.getStoragePath());
+
+    try{
+
+        byte[] data = Files.readAllBytes(path);
+
+        return ResponseEntity.ok().header("Content-Disposition", "attachment; filename=\"" + attachment.getOriginalFileName() + "\"").contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                .body(data);
+
+
+
+    }catch(IOException e){
+        throw new RuntimeException("Dosya indirme hatası: " + e.getMessage());
+    }
+
+
+
+
+   
 
 }
 }

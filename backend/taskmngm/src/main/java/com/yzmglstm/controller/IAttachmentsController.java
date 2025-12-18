@@ -13,7 +13,7 @@ public interface IAttachmentsController {
     public DtoAttachments uploadAttachments(MultipartFile file, Long taskId);
     public List<DtoAttachments> getAttachmentsByTask(Long taskID);
     public void deleteAttachment(Long id);
-    public ResponseEntity<Byte[]> downloadAttachment(Long id);
+    public ResponseEntity<byte[]> downloadAttachment(Long id);
     
 
 

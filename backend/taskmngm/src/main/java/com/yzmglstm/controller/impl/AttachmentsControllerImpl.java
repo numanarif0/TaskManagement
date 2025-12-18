@@ -2,6 +2,7 @@ package com.yzmglstm.controller.impl;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.yzmglstm.controller.IAttachmentsController;
 import com.yzmglstm.dto.DtoAttachments;
+import com.yzmglstm.services.IAttachmentsServices;
 
 
 
@@ -28,7 +30,7 @@ private IAttachmentsServices attachmentsServices;
 @Override
 @PostMapping("/upload/{taskId}")    
 public DtoAttachments uploadAttachments(@RequestParam("file")MultipartFile file, @PathVariable Long taskId){
-    return attachmentsServices.uploadAttachment(file, taskId);
+    return attachmentsServices.uploadAttachments(file, taskId);
 }
 
 @Override
@@ -44,7 +46,7 @@ public void deleteAttachment(@PathVariable Long id){
 
 @Override
 @GetMapping("/download/{id}")
-public ResponseEntity<Byte[]> downloadAttachment(@PathVariable Long id){
+public ResponseEntity<byte[]> downloadAttachment(@PathVariable Long id){
 
     return attachmentsServices.downloadAttachment(id);
 }

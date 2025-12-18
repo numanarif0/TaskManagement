@@ -30,6 +30,9 @@ public class Attachments {
     @Column(name="file_name", nullable = false)
     private String fileName;
 
+    @Column(name = "original_file_name", nullable = false)
+    private String originalFileName;
+
     @Column(name = "file_type", nullable = false)
     private String fileType;
 
@@ -43,7 +46,7 @@ public class Attachments {
     private LocalDate uploadDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false) 
+    @JoinColumn(name = "uploader_id", nullable = false) 
     @JsonIgnore
     private Users user;
 
