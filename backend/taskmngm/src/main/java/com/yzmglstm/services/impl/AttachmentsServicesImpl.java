@@ -126,17 +126,21 @@ public List<DtoAttachments> getAttachmentsByTask(Long taskId){
 }
 
 @Override
-public void deleteAttachment(Long id){
-    Attachments attachment = attachmentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Ek bulunamadı: " + id));
-    Path filePath = Paths.get(attachment.getStoragePath());
+@Transactional
+public void deleteAttachment(Long id) {
+    Attachments attachment = attachmentsRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Ek bulunamadı: " + id));
+
+    // PDF 8.1: Dosyayı sadece DB'den değil, klasörden de sil
     try {
+        Path filePath = Paths.get(attachment.getStoragePath());
         Files.deleteIfExists(filePath);
     } catch (IOException e) {
-        throw new RuntimeException("Dosya silme hatası: " + e.getMessage());
+        throw new RuntimeException("Fiziksel dosya silinemedi: " + e.getMessage());
     }
+
     attachmentsRepository.deleteById(id);
 }
-
 @Override
 public ResponseEntity<byte[]> downloadAttachment(Long id){
     
