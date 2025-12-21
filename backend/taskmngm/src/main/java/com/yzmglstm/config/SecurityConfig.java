@@ -43,7 +43,7 @@ public class SecurityConfig {
             return org.springframework.security.core.userdetails.User
                 .withUsername(user.getMail())
                 .password(user.getPassword())
-                .authorities(user.getRole())
+                .roles(user.getRole()) // PDF 8.2: Rollerin sisteme tanıtılması
                 .build();
         };
     }
@@ -53,24 +53,18 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
-            // Session'ı stateless yap
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            // HTTP Basic'i yapılandır - tarayıcı pop-up'ını devre dışı bırak
-            .httpBasic(basic -> basic
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .httpBasic(basic -> basic.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/register").permitAll() 
-                .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/tasks").authenticated() 
-                .requestMatchers("/api/tasks/**").authenticated()
-                .anyRequest().authenticated() 
+                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() // Herkese açık
+                .requestMatchers("/api/auth/get").hasRole("ADMIN") // PDF 8.2: Sadece Admin
+                .requestMatchers("/api/tasks/**").authenticated() // Giriş şartı
+                .requestMatchers("/api/attachments/**").authenticated() // Giriş şartı
+                .anyRequest().authenticated()
             );
-        
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

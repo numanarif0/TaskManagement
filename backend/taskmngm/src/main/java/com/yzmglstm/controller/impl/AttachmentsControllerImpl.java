@@ -41,7 +41,7 @@ public List<DtoAttachments> getAttachmentsByTask(@PathVariable Long taskID){
 @Override
 @DeleteMapping("/{id}")
 public void deleteAttachment(@PathVariable Long id){
-   
+    attachmentsServices.deleteAttachment(id); 
 }
 
 @Override
