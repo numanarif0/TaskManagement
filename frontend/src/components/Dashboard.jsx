@@ -1,13 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { taskService } from '../services/api';
+import Statistics from './Statistics';
+import FileManager from './FileManager';
 import './Dashboard.css';
 
 function Dashboard({ user, onLogout }) {
   const [tasks, setTasks] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showFileManager, setShowFileManager] = useState(null); // { taskId, taskTitle }
   const [loading, setLoading] = useState(false);            // genel loading (add)
   const [rowLoadingId, setRowLoadingId] = useState(null);   // tek satır loading (edit/delete)
+
+  // Filtreleme state'leri
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -43,6 +52,7 @@ function Dashboard({ user, onLogout }) {
   const handleAddTask = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     const result = await taskService.createTask(newTask);
     setLoading(false);
 
@@ -137,6 +147,50 @@ function Dashboard({ user, onLogout }) {
     return diff <= 2 && diff >= 0;
   };
 
+  const isOverdue = (dueDate) => {
+    const due = new Date(dueDate);
+    const now = new Date();
+    return due < now;
+  };
+
+  // Filtrelenmiş görevler
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => {
+      const categoryMatch = filterCategory === 'all' || task.category === filterCategory;
+      const statusMatch = filterStatus === 'all' || task.status === filterStatus;
+      return categoryMatch && statusMatch;
+    });
+  }, [tasks, filterCategory, filterStatus]);
+
+  // Benzersiz kategoriler
+  const categories = useMemo(() => {
+    const cats = [...new Set(tasks.map(t => t.category).filter(Boolean))];
+    return cats;
+  }, [tasks]);
+
+  // Task kartı için renk sınıfı
+  const getTaskCardClass = (task) => {
+    let classes = 'task-card';
+    
+    // Durum bazlı renk
+    if (task.status === 'Completed') {
+      classes += ' task-completed';
+    } else if (task.status === 'In Progress') {
+      classes += ' task-in-progress';
+    }
+    
+    // Deadline uyarıları (sadece tamamlanmamış görevler için)
+    if (task.status !== 'Completed') {
+      if (isOverdue(task.dueDate)) {
+        classes += ' task-overdue';
+      } else if (isDueSoon(task.dueDate)) {
+        classes += ' due-soon';
+      }
+    }
+    
+    return classes;
+  };
+
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
@@ -144,9 +198,14 @@ function Dashboard({ user, onLogout }) {
           <h1>Task Dashboard</h1>
           <p>Welcome back, {user?.firstName} {user?.lastName}!</p>
         </div>
-        <button onClick={onLogout} className="btn-logout">
-          Logout
-        </button>
+        <div className="header-actions">
+          <button onClick={() => setShowStats(true)} className="btn-stats">
+            Statistics
+          </button>
+          <button onClick={onLogout} className="btn-logout">
+            Logout
+          </button>
+        </div>
       </header>
 
       <div className="stats-container">
@@ -174,6 +233,45 @@ function Dashboard({ user, onLogout }) {
         </div>
       </div>
 
+      {/* Filtreleme Bölümü */}
+      <div className="filter-section">
+        <div className="filter-group">
+          <label>Category:</label>
+          <select 
+            value={filterCategory} 
+            onChange={(e) => setFilterCategory(e.target.value)}
+          >
+            <option value="all">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-group">
+          <label>Status:</label>
+          <select 
+            value={filterStatus} 
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+        {(filterCategory !== 'all' || filterStatus !== 'all') && (
+          <button 
+            className="btn-clear-filter"
+            onClick={() => { setFilterCategory('all'); setFilterStatus('all'); }}
+          >
+            Clear Filters
+          </button>
+        )}
+        <span className="filter-result">
+          Showing {filteredTasks.length} of {tasks.length} tasks
+        </span>
+      </div>
+
       <div className="tasks-section">
         <div className="section-header">
           <h2>Your Tasks</h2>
@@ -187,14 +285,14 @@ function Dashboard({ user, onLogout }) {
 
         {loading && !showAddModal ? (
           <p>Loading tasks...</p>
-        ) : tasks.length === 0 ? (
-          <p>No tasks yet. Click "Add Task" to create one!</p>
+        ) : filteredTasks.length === 0 ? (
+          <p>{tasks.length === 0 ? 'No tasks yet. Click "Add Task" to create one!' : 'No tasks match the current filters.'}</p>
         ) : (
           <div className="tasks-grid">
-            {tasks.map((task) => (
+            {filteredTasks.map((task) => (
               <div
                 key={task.id}
-                className={`task-card ${isDueSoon(task.dueDate) ? 'due-soon' : ''}`}
+                className={getTaskCardClass(task)}
               >
                 <div className="task-header">
                   <h3>{task.title}</h3>
@@ -212,11 +310,22 @@ function Dashboard({ user, onLogout }) {
                   </span>
                 </div>
 
-                {isDueSoon(task.dueDate) && (
+                {/* Deadline Uyarıları */}
+                {task.status !== 'Completed' && isOverdue(task.dueDate) && (
+                  <div className="alert-overdue">🚨 Overdue!</div>
+                )}
+                {task.status !== 'Completed' && isDueSoon(task.dueDate) && !isOverdue(task.dueDate) && (
                   <div className="alert-due">⚠️ Due soon!</div>
                 )}
 
                 <div className="task-actions">
+                  <button
+                    className="btn-files"
+                    onClick={() => setShowFileManager({ taskId: task.id, taskTitle: task.title })}
+                    title="Manage Files"
+                  >
+                    📎
+                  </button>
                   <button
                     className="btn-edit"
                     onClick={() => openEdit(task)}
@@ -468,6 +577,23 @@ function Dashboard({ user, onLogout }) {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Statistics Modal */}
+      {showStats && (
+        <Statistics 
+          tasks={tasks} 
+          onClose={() => setShowStats(false)} 
+        />
+      )}
+
+      {/* File Manager Modal */}
+      {showFileManager && (
+        <FileManager
+          taskId={showFileManager.taskId}
+          taskTitle={showFileManager.taskTitle}
+          onClose={() => setShowFileManager(null)}
+        />
       )}
     </div>
   );

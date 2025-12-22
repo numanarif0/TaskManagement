@@ -10,11 +10,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DtoAttachments {
-    
+
     private Long id;
     private String fileName;
+    private String originalFileName;
     private Long fileSize;
     private LocalDateTime uploadDate;
-    private String storagePath; 
+    private String storagePath;
 
 }

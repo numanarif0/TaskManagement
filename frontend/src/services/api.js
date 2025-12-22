@@ -18,6 +18,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Dosya yükleme için ayrı axios instance
+const apiMultipart = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+});
+
+apiMultipart.interceptors.request.use((config) => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.mail && user.password) {
+    const auth = btoa(`${user.mail}:${user.password}`);
+    config.headers.Authorization = `Basic ${auth}`;
+  }
+  return config;
+});
+
 // ---- Auth Service ----
 export const authService = {
   register: async (userData) => {
@@ -113,6 +128,89 @@ export const taskService = {
       return {
         success: false,
         error: error.response?.data?.message || 'Failed to delete task',
+      };
+    }
+  },
+
+  // ✅ STATS (GET /api/tasks/stats)
+  getTaskStats: async () => {
+    try {
+      const response = await api.get('/api/tasks/stats');
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to fetch stats',
+      };
+    }
+  },
+};
+
+// ---- Attachments Service ----
+export const attachmentService = {
+  // Dosya yükle
+  uploadFile: async (taskId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiMultipart.post(`/api/attachments/upload/${taskId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to upload file',
+      };
+    }
+  },
+
+  // Task'a ait dosyaları getir
+  getFilesByTask: async (taskId) => {
+    try {
+      const response = await api.get(`/api/attachments/task/${taskId}`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to fetch attachments',
+      };
+    }
+  },
+
+  // Dosya indir
+  downloadFile: async (attachmentId, fileName) => {
+    try {
+      const response = await api.get(`/api/attachments/download/${attachmentId}`, {
+        responseType: 'blob',
+      });
+      // Dosyayı indir
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to download file',
+      };
+    }
+  },
+
+  // Dosya sil
+  deleteFile: async (attachmentId) => {
+    try {
+      await api.delete(`/api/attachments/${attachmentId}`);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to delete file',
       };
     }
   },

@@ -101,9 +101,10 @@ public DtoAttachments uploadAttachments(MultipartFile file , Long taskId){
         DtoAttachments response = new DtoAttachments();
         response.setId(savedAttachment.getId());
         response.setFileName(savedAttachment.getFileName());
+        response.setOriginalFileName(savedAttachment.getOriginalFileName());
         response.setFileSize(savedAttachment.getFileSize());
         response.setUploadDate(LocalDateTime.now());
-        response.setStoragePath("/api/attachments/download/" + savedAttachment.getStoragePath());
+        response.setStoragePath("/api/attachments/download/" + savedAttachment.getId());
         return response;
 
 }
@@ -117,9 +118,10 @@ public List<DtoAttachments> getAttachmentsByTask(Long taskId){
         DtoAttachments dto = new DtoAttachments();
         dto.setId(att.getId());
         dto.setFileName(att.getFileName());
+        dto.setOriginalFileName(att.getOriginalFileName());
         dto.setFileSize(att.getFileSize());
-        dto.setUploadDate(LocalDateTime.now());
-        dto.setStoragePath("/api/attachments/download/" + att.getStoragePath());
+        dto.setUploadDate(att.getUploadDate().atStartOfDay());
+        dto.setStoragePath("/api/attachments/download/" + att.getId());
         dtoList.add(dto);
     }
     return dtoList;
