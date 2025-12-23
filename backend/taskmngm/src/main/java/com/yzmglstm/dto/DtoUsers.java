@@ -14,6 +14,7 @@ public class DtoUsers {
     private String firstName;
     private String lastName;
     private String mail;
+    private String phone;
     private String role;
 
     
